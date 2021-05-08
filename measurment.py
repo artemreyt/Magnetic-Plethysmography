@@ -26,13 +26,12 @@ def saveData(dirName, num, port1, port2):
     print("port2 = ", port2)
     count = 0
 
+    filename = os.path.join(dirName, f'{num}.txt')
+    with open(filename, "w") as file:
+        for i in range(len(port2)):
+            file.write(str(port2[i]) + "\n")
+            count += 1
 
-    for i in range(len(port2)):
-        fileName = dirName + "/%s.txt" % num
-        with open(fileName, "a") as file:
-            file.write(str(str(port2[i])))
-            file.write("\n")
-            count = count+1
     print('количество', count)
 
 
@@ -132,7 +131,9 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
             os.mkdir(dirName)
         except:
             pass
+        saveDataBegin = time.time()
         saveData(dirName, num, port1, port2)
+        print(f'DATA SAVED FOR {time.time() - saveDataBegin} SECONDS')
 
     # #if uGraph:
     # plt.figure(1)

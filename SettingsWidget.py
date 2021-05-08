@@ -16,7 +16,7 @@ speeds = ["430800", "921600", "9600", "19200"]
 byteSize = ["5", "6", "7", "8"]
 parity = ["Нет", "Чет", "Нечет"]
 stopBits = ["1", "1.5", "2"]
-measuring_durations = ["15", "30", "45", "60"]
+measuring_durations = ["15", "30", "45", "60", "200"]
 
 class SettingsWidget(QWidget):
 
