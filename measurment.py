@@ -15,8 +15,6 @@ from peakdetect import _datacheck_peakdetect, _peakdetect_parabole_fitter, peakd
 from DigitalFilter import processing
 import time
 
-MEASURING_TIME = 60
-
 
 def calibration(port,speed):
     run(port, speed, "calibration", message=b'\xFF', saving=False, uGraph=False, iGraph=True)
@@ -69,7 +67,7 @@ def read_one_byte(port):
     return bt
 
 
-def run(port, speed, dirName, num=1, message=b'\01', saving=True, uGraph=True, iGraph=False):
+def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGraph=True, iGraph=False):
     ser = serial.Serial(port=port,
                         baudrate=speed,
                         # stopBits=selectedStopBits
@@ -105,7 +103,7 @@ def run(port, speed, dirName, num=1, message=b'\01', saving=True, uGraph=True, i
             one_byte = read_one_byte(ser)
             data.append(one_byte)
         print(data)
-        if time.time() - begin_time >= MEASURING_TIME:
+        if time.time() - begin_time >= duration:
             endMeasurement = True
         else:
             full_data.append(data)
