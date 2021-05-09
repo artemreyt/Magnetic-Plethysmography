@@ -6,7 +6,7 @@ def get_fourier_result (signal, period):
     complex_four = np.fft.fft(signal)
     spectra = np.absolute(complex_four)
     freqs = []
-    for i in range(0, int(len(signal) / 2)):
+    for i in range(0, len(signal) // 2):
         freqs.append(1 / (period * len(signal)) * i)
 
     new_spectra = []

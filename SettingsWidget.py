@@ -174,6 +174,7 @@ class SettingsWidget(QWidget):
 
         selectedDevice = self.devicesBox.currentText()
         selectedSpeed = int(self.speedBox.currentText())
+        selectedDuration = int(self.durationBox.currentText())
         # selectedStopBits = int(self.stop.currentText())
         # selectedByteSize = int(self.byteSizeBox.currentText())
         dirName = str(time.ctime()).replace(":", "-")
@@ -181,6 +182,7 @@ class SettingsWidget(QWidget):
             measurment.run(
                 port=selectedDevice,
                 speed=selectedSpeed,
+                duration=selectedDuration,
                 dirName=dirName
             )
 

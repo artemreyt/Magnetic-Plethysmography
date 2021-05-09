@@ -16,24 +16,20 @@ from DigitalFilter import processing
 import time
 
 
-def calibration(port,speed):
+def calibration(port, speed):
     run(port, speed, "calibration", message=b'\xFF', saving=False, uGraph=False, iGraph=True)
 
-
-
-def saveData(dirName, num, port1, port2):
-    print("port1 = ", port1)
-    print("port2 = ", port2)
+def saveData(dirName, num, duration, port1, port2): #, time_points):
     count = 0
 
     filename = os.path.join(dirName, f'{num}.txt')
     with open(filename, "w") as file:
+        file.write(f'{duration}\n')
         for i in range(len(port2)):
-            file.write(str(port2[i]) + "\n")
+            file.write(f'{port1[i]} {port2[i]}\n') #{time_points[i]}\n')
             count += 1
 
     print('количество', count)
-
 
 
 def parse_input_buffer(buf):
@@ -49,13 +45,6 @@ def parse_input_buffer(buf):
     ch1 = (buf_int[0] << 24) | (buf_int[1] << 16) | (buf_int[2] << 8) | buf_int[3]
     if ch1 > 2**31:
         ch1 = ch1-2**32
-
-    print("bulbul" + str(ch1 - 2**31))
-   # ch1 = 0
-    #k = 3
-    #for num in buf:
-     #   ch1 += num << k*8
-      #  k = k-1
     return ch1
 
 
@@ -80,7 +69,6 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
 
     full_data = []
     start = False
-    endMeasurement = False
 
     while not start:
         one_byte = read_one_byte(ser)
@@ -89,8 +77,8 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
             print("Started")
     print("Out of loop")
 
-    begin_time = time.time()
-    while not endMeasurement:
+    begin_measuring_time = time.time()
+    while time.time() - begin_measuring_time < duration:
         data = []
         one_byte = read_one_byte(ser)
         if one_byte == b'\x07':
@@ -101,12 +89,8 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
         while len(data) != 10:
             one_byte = read_one_byte(ser)
             data.append(one_byte)
-        print(data)
-        if time.time() - begin_time >= duration:
-            endMeasurement = True
-        else:
-            full_data.append(data)
-
+        full_data.append(data)
+        print(f'DATA: {data}')
 
     ser.close()
     port1 = []
@@ -119,12 +103,12 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
 
         port2.append(parse_input_buffer(half2))
         port1.append(parse_input_buffer(half1))
+
+        port1[i] = abs(port1[i])
+        port2[i] = abs(port2[i])
+
         print(port1[i])
         print(port2[i])
-
-
-
-
 
     if saving:
         try:
@@ -132,7 +116,7 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
         except:
             pass
         saveDataBegin = time.time()
-        saveData(dirName, num, port1, port2)
+        saveData(dirName, num, duration, port1, port2)
         print(f'DATA SAVED FOR {time.time() - saveDataBegin} SECONDS')
 
     # #if uGraph:
