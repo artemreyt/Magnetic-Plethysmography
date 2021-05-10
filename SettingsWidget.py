@@ -16,7 +16,7 @@ speeds = ["430800", "921600", "9600", "19200"]
 byteSize = ["5", "6", "7", "8"]
 parity = ["Нет", "Чет", "Нечет"]
 stopBits = ["1", "1.5", "2"]
-measuring_durations = ["15", "30", "45", "60", "200"]
+measuring_durations = ["15", "5",  "30", "10", "60", "200"]
 
 class SettingsWidget(QWidget):
 
@@ -162,15 +162,24 @@ class SettingsWidget(QWidget):
         self.calibrationButton.clicked.connect(self.calibration)
         self.layout.addWidget(self.calibrationButton, widgets_row, 2)
 
-        self.singleMeasurmentButton = QPushButton("Единичное измерение")
-        self.singleMeasurmentButton.setIcon(QIcon("play.png"))
-        self.singleMeasurmentButton.clicked.connect(self.singleMeasurment)
-        self.layout.addWidget(self.singleMeasurmentButton, widgets_row, 1)
+        # self.singleMeasurmentButton = QPushButton("Единичное измерение")
+        # self.singleMeasurmentButton.setIcon(QIcon("play.png"))
+        # self.singleMeasurmentButton.clicked.connect(self.singleMeasurment)
+        # self.layout.addWidget(self.singleMeasurmentButton, widgets_row, 1)
         widgets_row += 1
 
         os.chdir(rootPath)
 
     def singleMeasurment(self):
+        # self.running = True
+        # self.stopButton.setHidden(False)
+        # self.startButton.setHidden(True)
+        # self.stateLabel.setText('Подготовка к измерениям...')
+
+        self.running = True
+        self.stopButton.setHidden(False)
+        self.startButton.setHidden(True)
+        self.stateLabel.setText("Проводятся измерения")
 
         selectedDevice = self.devicesBox.currentText()
         selectedSpeed = int(self.speedBox.currentText())
@@ -183,7 +192,10 @@ class SettingsWidget(QWidget):
                 port=selectedDevice,
                 speed=selectedSpeed,
                 duration=selectedDuration,
-                dirName=dirName
+                dirName=dirName,
+                num=1,
+                saving=True,
+                widget=self
             )
 
         except Exception as error:
@@ -191,6 +203,8 @@ class SettingsWidget(QWidget):
             QMessageBox.question(self, 'Уведомление',
                                  "Не удалось подключиться к %s" % selectedDevice, QMessageBox.Ok |
                                  QMessageBox.Ok)
+        finally:
+            self.stateLabel.setText('Отключено')
 
     def calibration(self):
         selectedDevice = self.devicesBox.currentText()
@@ -217,7 +231,7 @@ class SettingsWidget(QWidget):
         # selectedByteSize = int(self.byteSizeBox.currentText())
         dirName = str(time.ctime()).replace(":", "-")
 
-        def thread():
+        def thread(widget=None):
             i = 1
             while self.running:
                 try:
@@ -228,7 +242,8 @@ class SettingsWidget(QWidget):
                         dirName=dirName,
                         num=i,
                         uGraph=False,
-                        iGraph=False
+                        iGraph=False,
+                        widget=self
                     )
                     i += 1
                 except Exception as error:
@@ -237,7 +252,7 @@ class SettingsWidget(QWidget):
 
                 time.sleep(10)
 
-        threading.Thread(target=thread).start()
+        threading.Thread(target=thread, args=(self,)).start()
 
 
     def updateConnectedDevices(self):

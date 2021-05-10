@@ -90,13 +90,6 @@ class MyTableWidget(QWidget):
             self.le.setText(str(text))
 
 
-
-
-
-
-
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = App()

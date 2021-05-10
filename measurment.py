@@ -14,21 +14,20 @@ from Pulse import get_fourier_result, max_point, beauty_picture
 from peakdetect import _datacheck_peakdetect, _peakdetect_parabole_fitter, peakdetect, peakdetect_fft, peakdetect_parabole, peakdetect_sine, peakdetect_zero_crossing, _smooth, zero_crossings, _test_zero, _test,  _test_graph
 from DigitalFilter import processing
 import time
+from draw_graph.draw_graph import draw_ports, draw_ports_from_file
+from multiprocessing import Process
 
 
 def calibration(port, speed):
     run(port, speed, "calibration", message=b'\xFF', saving=False, uGraph=False, iGraph=True)
 
-def saveData(dirName, num, duration, port1, port2): #, time_points):
+def saveData(filename, duration, port1, port2):
     count = 0
-
-    filename = os.path.join(dirName, f'{num}.txt')
     with open(filename, "w") as file:
         file.write(f'{duration}\n')
         for i in range(len(port2)):
-            file.write(f'{port1[i]} {port2[i]}\n') #{time_points[i]}\n')
+            file.write(f'{port1[i]} {port2[i]}\n')
             count += 1
-
     print('количество', count)
 
 
@@ -55,7 +54,8 @@ def read_one_byte(port):
     return bt
 
 
-def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGraph=True, iGraph=False):
+def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGraph=True, iGraph=False,
+        widget=None):
     ser = serial.Serial(port=port,
                         baudrate=speed,
                         # stopBits=selectedStopBits
@@ -84,13 +84,15 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
         if one_byte == b'\x07':
             print("Ended")
             break
-        print("Not end")
+        # print("Not end")
         data.append(one_byte)
         while len(data) != 10:
             one_byte = read_one_byte(ser)
             data.append(one_byte)
         full_data.append(data)
         print(f'DATA: {data}')
+        if widget:
+            widget.stateLabel.setText(f'{round(duration + begin_measuring_time - time.time())} сек...')
 
     ser.close()
     port1 = []
@@ -107,21 +109,24 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
         port1[i] = abs(port1[i])
         port2[i] = abs(port2[i])
 
-        print(port1[i])
-        print(port2[i])
+        # print(port1[i])
+        # print(port2[i])
 
+    save_filename = os.path.join(dirName, f'{num}.txt')
     if saving:
         try:
             os.mkdir(dirName)
         except:
             pass
         saveDataBegin = time.time()
-        saveData(dirName, num, duration, port1, port2)
+        saveData(save_filename, duration, port1, port2)
         print(f'DATA SAVED FOR {time.time() - saveDataBegin} SECONDS')
 
-    # #if uGraph:
-    # plt.figure(1)
-    # plt.plot(range(len(port1)), port1)
+    # Если хочешь, чтобы порт не печатался, раскомментировать  нужный
+    # ЕСЛИ ЧЕРЕЗ САМУ ПРОГРАММУ
+    port1 = None
+    #port2 = None
+    Process(target=draw_ports, args=(duration, port1, port2)).start()
 
     #if iGraph:
     plt.figure(1)
@@ -141,22 +146,11 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
 
     U = []
     U = processing(port2)
-
-
     plt.figure(2)
     plt.plot(freqs, new_spectra)
-
     plt.figure(3)
     plt.plot(beauty_freqs, beauty_spectra)
-
     plt.figure(4)
     plt.plot(U)
-
-
     # plt.show()
-    plt.savefig('graph.png')
-
-
-
-
-
+    plt.savefig('graph1.png')
