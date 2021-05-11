@@ -3,15 +3,27 @@ import matplotlib
 import numpy as np
 import sys
 import os
+from scipy import signal
+
+def filter_signal(sig):
+    fc = 80
+    w = fc / (len(sig) / 2)
+    b, a = signal.butter(5, w, 'low')
+    return signal.filtfilt(b, a, sig)
+
 
 def draw_ports(duration, port1=None, port2=None):
     assert port1 != None or port2 != None
     matplotlib.use('qt5agg')
 
     if port1:
+        port1_filtered = filter_signal(port1)
         plt.plot(np.linspace(0., duration, len(port1)), port1, label='port 1')
+        plt.plot(np.linspace(0., duration, len(port1_filtered)), port1_filtered, label='port 1 filtered')
     if port2:
+        port2_filtered = filter_signal(port2)
         plt.plot(np.linspace(0., duration, len(port2)), port2, label='port 2')
+        plt.plot(np.linspace(0., duration, len(port2_filtered)), port2_filtered, label='port 2 filtered')
     plt.legend()
     plt.ylabel('U, V')
     plt.xlabel('Time, s')
