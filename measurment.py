@@ -14,7 +14,7 @@ from Pulse import get_fourier_result, max_point, beauty_picture
 from peakdetect import _datacheck_peakdetect, _peakdetect_parabole_fitter, peakdetect, peakdetect_fft, peakdetect_parabole, peakdetect_sine, peakdetect_zero_crossing, _smooth, zero_crossings, _test_zero, _test,  _test_graph
 from DigitalFilter import processing
 import time
-from draw_graph.draw_graph import draw_ports, draw_ports_from_file
+from draw_graph.draw_graph import draw_ports, PlotConfig, config_filename
 from multiprocessing import Process
 
 
@@ -122,11 +122,7 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
         saveData(save_filename, duration, port1, port2)
         print(f'DATA SAVED FOR {time.time() - saveDataBegin} SECONDS')
 
-    # Если хочешь, чтобы порт не печатался, раскомментировать  нужный
-    # ЕСЛИ ЧЕРЕЗ САМУ ПРОГРАММУ
-    port1 = None
-    #port2 = None
-    Process(target=draw_ports, args=(duration, port1, port2)).start()
+    Process(target=draw_ports, args=(duration, port1, port2, PlotConfig(config_filename))).start()
 
     #if iGraph:
     plt.figure(1)

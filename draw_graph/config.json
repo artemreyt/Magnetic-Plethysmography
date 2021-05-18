@@ -1,0 +1,15 @@
+{
+  "port1" : {
+    "self": false,
+    "lowpass": false,
+    "highpass": false,
+    "peaks": false
+  },
+
+  "port2" : {
+    "self": false,
+    "lowpass": false,
+    "highpass": true,
+    "peaks": true
+  }
+}
