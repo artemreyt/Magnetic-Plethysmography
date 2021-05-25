@@ -21,11 +21,23 @@ def highpass_filter_signal(sig):
     return signal.filtfilt(b, a, sig)
 
 def lowpass_filter_signal(sig):
-    fc = 30
+    fc = 70
     w = fc / (len(sig) / 2)
     b, a = signal.butter(5, w, 'low')
     return signal.filtfilt(b, a, sig)
 
+def calc_hc(peaks, time_seq):
+    periods = []
+    print("Periods:", end=" ")
+    for i in range(len(peaks) - 1):
+        period = time_seq[peaks[i + 1]] - time_seq[peaks[i]]
+        periods.append(period)
+        print(round(period, 3), end=" ")
+    mid_period = sum(periods) / len(periods)
+    print(f"\nMiddle period = { mid_period }")
+    hc = 60 / mid_period
+    print(f"ЧСС = {hc}")
+    return hc
 
 def draw_ports(duration, port1, port2, config=None):
     if config is None:
@@ -69,19 +81,18 @@ def draw_ports(duration, port1, port2, config=None):
         if config.port2["lowpass"]:
             axs[0].plot(x, port2_filtered_lowpass, label='port 2 filtered lowpass')
         if config.port2["peaks"]:
-            peaks, _ = signal.find_peaks(port2_filtered_lowpass, height=max(port2_filtered_lowpass)/2)
+            peaks, _ = signal.find_peaks(port2_filtered_lowpass, height=max(port2_filtered_lowpass) * 0.45)
             axs[0].plot(x[peaks], port2_filtered_lowpass[peaks], 'x', label='peaks port2_filtered_lowpass')
-            port2_heart_rate = len(peaks) * 60 / duration
-            title += f'ЧСС2={port2_heart_rate}'
+            title += f'ЧСС2={calc_hc(peaks, x)}'
+        plt.title(title)
 
-        freq = np.arange(0, 3, 1/488 * duration)
+        freq = np.arange(0, 0.1, 1/488)
         fft_port2_lowpass = np.absolute(numpy.fft.fft(port2_filtered_lowpass))[:len(freq)]
         axs[1].plot(freq, fft_port2_lowpass)
 
-    plt.title(title)
-    plt.legend()
-    plt.ylabel('U, V')
-    plt.xlabel('Time, s')
+    # plt.legend()
+    # plt.ylabel('U, V')
+    # plt.xlabel('Time, s')
     plt.show()
 
 
