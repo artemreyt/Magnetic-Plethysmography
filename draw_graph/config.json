@@ -8,8 +8,8 @@
 
   "port2" : {
     "self": false,
-    "lowpass": false,
     "highpass": true,
+    "lowpass": true,
     "peaks": true
   }
 }

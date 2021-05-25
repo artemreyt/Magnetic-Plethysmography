@@ -122,7 +122,8 @@ def run(port, speed, duration, dirName, num=1, message=b'\01', saving=True, uGra
         saveData(save_filename, duration, port1, port2)
         print(f'DATA SAVED FOR {time.time() - saveDataBegin} SECONDS')
 
-    Process(target=draw_ports, args=(duration, port1, port2, PlotConfig(config_filename))).start()
+    Process(target=draw_ports, args=(duration, port1, port2,
+                                     PlotConfig(os.path.join('draw_graph', config_filename)))).start()
 
     #if iGraph:
     plt.figure(1)

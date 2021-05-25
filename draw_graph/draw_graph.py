@@ -3,20 +3,25 @@ import matplotlib
 import numpy as np
 import sys
 import os
+
+import numpy.fft
 from scipy import signal
 import json
 
 config_filename = "config.json"
 
+def mean_absolute_error(raw, filtered):
+    np_raw, np_filtered = np.array(raw), np.array(filtered)
+    return np.sum(np.abs(np_raw - np_filtered))/ len(np_raw)
 
 def highpass_filter_signal(sig):
-    fc = 30
+    fc = 10
     w = fc / (len(sig) / 2)
     b, a = signal.butter(5, w, btype='high')
     return signal.filtfilt(b, a, sig)
 
 def lowpass_filter_signal(sig):
-    fc = 70
+    fc = 30
     w = fc / (len(sig) / 2)
     b, a = signal.butter(5, w, 'low')
     return signal.filtfilt(b, a, sig)
@@ -27,7 +32,7 @@ def draw_ports(duration, port1, port2, config=None):
         config = PlotConfig()
 
     matplotlib.use('qt5agg')
-
+    # fig = plt.figure()
 
     title = ""
     if any(config.port1):
@@ -50,21 +55,28 @@ def draw_ports(duration, port1, port2, config=None):
 
     if any(config.port2):
 
-        port2_filtered_lowpass = lowpass_filter_signal(port2)
-        port2_filtered_highpass = highpass_filter_signal(port2_filtered_lowpass)
+
+        port2_filtered_highpass = highpass_filter_signal(port2)
+        port2_filtered_lowpass = lowpass_filter_signal(port2_filtered_highpass)
         x = np.linspace(0., duration, len(port2))
 
+        fig, axs = plt.subplots(2)
         if config.port2["self"]:
-            plt.plot(x, port2, label='port 2')
-        if config.port2["lowpass"]:
-            plt.plot(x, port2_filtered_lowpass, label='port 2 filtered lowpass')
+            axs[0].plot(x, port2, label='port 2')
         if config.port2["highpass"]:
-            plt.plot(x, port2_filtered_highpass, label='port 2 filtered highpass')
+            axs[0].plot(x, port2_filtered_highpass,
+                label=f'port 2 filtered highpass, MAE = {mean_absolute_error(port2_filtered_lowpass, port2_filtered_highpass)}')
+        if config.port2["lowpass"]:
+            axs[0].plot(x, port2_filtered_lowpass, label='port 2 filtered lowpass')
         if config.port2["peaks"]:
-            peaks, _ = signal.find_peaks(port2_filtered_highpass, height=max(port2_filtered_highpass)/2)
-            plt.plot(x[peaks], port2_filtered_highpass[peaks], 'x', label='peaks port2_filtered_highpass')
+            peaks, _ = signal.find_peaks(port2_filtered_lowpass, height=max(port2_filtered_lowpass)/2)
+            axs[0].plot(x[peaks], port2_filtered_lowpass[peaks], 'x', label='peaks port2_filtered_lowpass')
             port2_heart_rate = len(peaks) * 60 / duration
             title += f'ЧСС2={port2_heart_rate}'
+
+        freq = np.arange(0, 3, 1/488 * duration)
+        fft_port2_lowpass = np.absolute(numpy.fft.fft(port2_filtered_lowpass))[:len(freq)]
+        axs[1].plot(freq, fft_port2_lowpass)
 
     plt.title(title)
     plt.legend()
