@@ -72,27 +72,27 @@ def draw_ports(duration, port1, port2, config=None):
         port2_filtered_lowpass = lowpass_filter_signal(port2_filtered_highpass)
         x = np.linspace(0., duration, len(port2))
 
-        fig, axs = plt.subplots(2)
+        # fig, axs = plt.subplots(2)
         if config.port2["self"]:
-            axs[0].plot(x, port2, label='port 2')
+            plt.plot(x, port2, label='port 2')
         if config.port2["highpass"]:
-            axs[0].plot(x, port2_filtered_highpass,
+            plt.plot(x, port2_filtered_highpass,
                 label=f'port 2 filtered highpass, MAE = {mean_absolute_error(port2_filtered_lowpass, port2_filtered_highpass)}')
         if config.port2["lowpass"]:
-            axs[0].plot(x, port2_filtered_lowpass, label='port 2 filtered lowpass')
+            plt.plot(x, port2_filtered_lowpass, label='port 2 filtered lowpass')
         if config.port2["peaks"]:
             peaks, _ = signal.find_peaks(port2_filtered_lowpass, height=max(port2_filtered_lowpass) * 0.45)
-            axs[0].plot(x[peaks], port2_filtered_lowpass[peaks], 'x', label='peaks port2_filtered_lowpass')
+            plt.plot(x[peaks], port2_filtered_lowpass[peaks], 'x', label='peaks port2_filtered_lowpass')
             title += f'ЧСС2={calc_hc(peaks, x)}'
         plt.title(title)
 
         freq = np.arange(0, 0.1, 1/488)
-        fft_port2_lowpass = np.absolute(numpy.fft.fft(port2_filtered_lowpass))[:len(freq)]
-        axs[1].plot(freq, fft_port2_lowpass)
+        # fft_port2_lowpass = np.absolute(numpy.fft.fft(port2_filtered_lowpass))[:len(freq)]
+        # axs[1].plot(freq, fft_port2_lowpass)
 
-    # plt.legend()
+    plt.legend()
     # plt.ylabel('U, V')
-    # plt.xlabel('Time, s')
+    plt.xlabel('Time, s')
     plt.show()
 
 
