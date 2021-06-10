@@ -14,13 +14,26 @@ def mean_absolute_error(raw, filtered):
     np_raw, np_filtered = np.array(raw), np.array(filtered)
     return np.sum(np.abs(np_raw - np_filtered))/ len(np_raw)
 
-def highpass_filter_signal(sig):
+def highpass_filter_signal_port1(sig):
     fc = 10
     w = fc / (len(sig) / 2)
     b, a = signal.butter(5, w, btype='high')
     return signal.filtfilt(b, a, sig)
 
-def lowpass_filter_signal(sig):
+def lowpass_filter_signal_port1(sig):
+    fc = 70
+    w = fc / (len(sig) / 2)
+    b, a = signal.butter(5, w, 'low')
+    return signal.filtfilt(b, a, sig)
+
+
+def highpass_filter_signal_port2(sig):
+    fc = 10
+    w = fc / (len(sig) / 2)
+    b, a = signal.butter(5, w, btype='high')
+    return signal.filtfilt(b, a, sig)
+
+def lowpass_filter_signal_port2(sig):
     fc = 70
     w = fc / (len(sig) / 2)
     b, a = signal.butter(5, w, 'low')
@@ -49,8 +62,8 @@ def draw_ports(duration, port1, port2, config=None):
     title = ""
     if any(config.port1):
 
-        port1_filtered_lowpass = lowpass_filter_signal(port1)
-        port1_filtered_highpass = highpass_filter_signal(port1_filtered_lowpass)
+        port1_filtered_highpass = highpass_filter_signal_port1(port1)
+        port1_filtered_lowpass = lowpass_filter_signal_port1(port1_filtered_highpass)
         x = np.linspace(0., duration, len(port1))
 
         if config.port1["self"]:
@@ -67,9 +80,8 @@ def draw_ports(duration, port1, port2, config=None):
 
     if any(config.port2):
 
-
-        port2_filtered_highpass = highpass_filter_signal(port2)
-        port2_filtered_lowpass = lowpass_filter_signal(port2_filtered_highpass)
+        port2_filtered_highpass = highpass_filter_signal_port2(port2)
+        port2_filtered_lowpass = lowpass_filter_signal_port2(port2_filtered_highpass)
         x = np.linspace(0., duration, len(port2))
 
         # fig, axs = plt.subplots(2)
